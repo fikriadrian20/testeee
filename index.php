@@ -1,4 +1,5 @@
-require 'vendor/autoload.php';
+<?php
+require 'path/to/goutte/vendor/autoload.php';
 
 use Goutte\Client;
 
@@ -7,11 +8,12 @@ if (!function_exists('curl_version')) {
 }
 
 $client = new Client();
+$client->setClient(new \GuzzleHttp\Client(['curl' => [CURLOPT_SSL_VERIFYPEER => false]]));
+$client->setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0;Win64) AppleWebkit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36');
 
-$email = readline("Enter email: ");
-$password = readline("Enter password: ");
+$email = file_get_contents("email.txt");
+$password = file_get_contents("password.txt");
 $proxy = readline("Enter proxy: ");
-
 $client->setClient(new \GuzzleHttp\Client(['proxy' => $proxy]));
 
 // Send a GET request to the login page
