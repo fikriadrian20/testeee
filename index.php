@@ -1,8 +1,7 @@
 <?php
-// Import library cURL
+
 import cURL
 
-// Fungsi login
 function login($email, $password, $proxy) {
     // Set up cURL
     $curl = curl_init();
@@ -31,11 +30,10 @@ function login($email, $password, $proxy) {
     return $data;
 }
 
-// Open the list of passwords
 $file = fopen("passwords.txt", "r");
-// Open the list of proxies
+
 $proxies = fopen("proxies.txt", "r");
-// Loop through the list of passwords
+
 while(!feof($file)) {
     // Get the next password
     $line = trim(fgets($file));
