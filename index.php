@@ -1,5 +1,5 @@
 <?php
-require 'path/to/goutte/vendor/autoload.php';
+require 'vendor/autoload.php';
 
 use Goutte\Client;
 
